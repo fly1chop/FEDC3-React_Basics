@@ -22,6 +22,7 @@ function App() {
         total={articles.length}
         onChange={setPage}
       />
+      <img src='' alt='' />
       <Board articles={articles.slice(offset, offset + limit)} />
     </>
   );
