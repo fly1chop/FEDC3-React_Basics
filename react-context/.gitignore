@@ -6,6 +6,7 @@
 .pnp.js
 .npmrc
 .storybook
+craco.config.js
 
 # testing
 /coverage
