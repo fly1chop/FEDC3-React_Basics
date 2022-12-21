@@ -61,11 +61,11 @@ const Image = ({
 
   return (
     <img
+      {...props}
       ref={imgRef}
       src={loaded ? src : placeholder}
       alt={alt}
       style={{ ...props.style, ...imageStyle }}
-      {...props}
     />
   );
 };
