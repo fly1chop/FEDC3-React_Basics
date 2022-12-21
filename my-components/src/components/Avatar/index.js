@@ -1,13 +1,19 @@
 import ImageComponent from '../Image/index.js';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
+import AvatarGroup from './AvatarGroup.js';
+
+const ShapeToCssValue = {
+  circle: '50%',
+  round: '4px',
+  square: '0px',
+};
 
 const AvatarWrapper = styled.div`
   position: relative;
   display: inline-block;
   border: 1px solid #dadada;
-  border-radius: ${({ shape }) =>
-    shape === 'circle' ? '50%' : shape === 'round' ? '4px' : '0px'};
+  border-radius: ${({ shape }) => ShapeToCssValue[shape]};
   background-color: #eee;
   overflow: hidden;
 
@@ -25,6 +31,7 @@ const Avatar = ({
   placeholder,
   alt,
   mode = 'cover',
+  _type,
   ...props
 }) => {
   const [loaded, setLoaded] = useState(false);
@@ -52,5 +59,15 @@ const Avatar = ({
     </AvatarWrapper>
   );
 };
+
+Avatar.defaultProps = {
+  _type: 'Avatar',
+};
+
+Avatar.propTypes = {
+  _type: 'Avatar',
+};
+
+Avatar.Group = AvatarGroup;
 
 export default Avatar;
