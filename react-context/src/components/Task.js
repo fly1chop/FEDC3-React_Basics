@@ -37,8 +37,15 @@ const Task = ({ id, content, complete, ...props }) => {
 
   return (
     <ListItem {...props}>
-      <Toggle on={complete} onChange={e => updateTask(id, e.target.value)} />
-      <Content>{content}</Content>
+      <Toggle
+        on={complete}
+        onChange={e => {
+          updateTask(id, e.target.checked);
+        }}
+      />
+      <Content style={{ textDecoration: complete ? 'line-through' : 'none' }}>
+        {content}
+      </Content>
       <RemoveButton onClick={() => removeTask(id)}>Remove</RemoveButton>
     </ListItem>
   );
