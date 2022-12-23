@@ -9,6 +9,7 @@ const TabItemWrapper = styled.div`
   width: 140px;
   height: 60px;
   background-color: ${({ active }) => (active ? '#ddf' : '#eee')};
+  cursor: pointer;
 `;
 
 const TabItem = ({ title, index, active, ...props }) => {
