@@ -1,5 +1,83 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
+const MidifierBitMasks = {
+  alt: 1,
+  ctrl: 2,
+  meta: 4,
+  shift: 8,
+};
+
+const ShiftKeys = {
+  '~': '`',
+  '!': '1',
+  '@': '2',
+  '#': '3',
+  $: '4',
+  '%': '5',
+  '^': '6',
+  '&': '7',
+  '*': '8',
+  '(': '9',
+  ')': '0',
+  _: '-',
+  '+': '=',
+  '{': '[',
+  '}': ']',
+  '|': '\\',
+  ':': ';',
+  '"': "'",
+  '<': ',',
+  '>': '.',
+  '?': '/',
+};
+
+const Aliases = {
+  win: 'meta',
+  window: 'meta',
+  cmd: 'meta',
+  command: 'meta',
+  esc: 'escape',
+  opt: 'alt',
+  option: 'alt',
+};
+
+const getKeyCombo = e => {
+  const key = e.key !== ' ' ? e.key.toLowerCase() : 'space';
+
+  let modifiers = 0;
+  if (e.altKey) modifiers += MidifierBitMasks.alt;
+  if (e.ctrlKey) modifiers += MidifierBitMasks.ctrl;
+  if (e.metaKey) modifiers += MidifierBitMasks.meta;
+  if (e.shiftKey) modifiers += MidifierBitMasks.shift;
+
+  return { modifiers, key };
+};
+
+const parseKeyCombo = combo => {
+  const pieces = combo.replace(/\s/g, '').toLowerCase().split('+');
+
+  let modifiers = 0;
+  let key;
+  for (const piece of pieces) {
+    if (MidifierBitMasks[piece]) {
+      modifiers += MidifierBitMasks[piece];
+    } else if (ShiftKeys[piece]) {
+      modifiers += MidifierBitMasks.shift;
+      key = ShiftKeys[piece];
+    } else if (Aliases[pieces]) {
+      key = Aliases[piece];
+    } else {
+      key = piece;
+    }
+  }
+
+  return { modifiers, key };
+};
+
+const comboMatches = (a, b) => {
+  return a.modifiers === b.modifiers && a.key === b.key;
+};
+
 const useHotKey = hotkeys => {
   const localKeys = useMemo(() => hotkeys.filter(k => !k.global), [hotkeys]);
   const globalKeys = useMemo(() => hotkeys.filter(k => k.global), [hotkeys]);
@@ -7,7 +85,9 @@ const useHotKey = hotkeys => {
   const invokeCallback = useCallback(
     (global, combo, callbackName, e) => {
       for (const hotkey of global ? globalKeys : localKeys) {
-        hotkey[callbackName](e); //callbackName: onKeyDown, onKeyUp
+        if (comboMatches(parseKeyCombo(hotkey.combo), combo)) {
+          hotkey[callbackName] && hotkey[callbackName](e); //callbackName: onKeyDown, onKeyUp
+        }
       }
     },
     [localKeys, globalKeys]
@@ -15,28 +95,38 @@ const useHotKey = hotkeys => {
 
   const handleGlobalKeyDown = useCallback(
     e => {
-      invokeCallback(true, undefined, 'onKeyDown', e);
+      invokeCallback(true, getKeyCombo(e), 'onKeyDown', e);
     },
     [invokeCallback]
   );
 
   const handleGlobalKeyUp = useCallback(
     e => {
-      invokeCallback(true, undefined, 'onKeyUp', e);
+      invokeCallback(true, getKeyCombo(e), 'onKeyUp', e);
     },
     [invokeCallback]
   );
 
   const handleLocalKeyDown = useCallback(
     e => {
-      invokeCallback(false, undefined, 'onKeyDown', e.nativeEvent);
+      invokeCallback(
+        false,
+        getKeyCombo(e.nativeEvent),
+        'onKeyDown',
+        e.nativeEvent
+      );
     },
     [invokeCallback]
   );
 
   const handleLocalKeyUp = useCallback(
     e => {
-      invokeCallback(false, undefined, 'onKeyUp', e.nativeEvent);
+      invokeCallback(
+        false,
+        getKeyCombo(e.nativeEvent),
+        'onKeyUp',
+        e.nativeEvent
+      );
     },
     [invokeCallback]
   );
@@ -53,17 +143,5 @@ const useHotKey = hotkeys => {
 
   return { handleKeyDown: handleLocalKeyDown, handleKeyUp: handleLocalKeyUp };
 };
-
-// const hotkeys = [
-//   {
-//     global: true,
-//     combo: 'ctrl+k',
-//     onKeyDown: e => {
-//       alert(this.combo);
-//     },
-//   },
-// ];
-
-// useHotKey(hotkeys)
 
 export default useHotKey;
